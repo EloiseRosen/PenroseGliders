@@ -1,1 +1,1 @@
-# PenroseCellularAutomata
+# PenroseGliders
