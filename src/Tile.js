@@ -5,8 +5,8 @@ const stateToColor = ['lightgray', 'pink', 'yellow', 'coral', 'cyan'] // state c
 
 function Tile(props) {
   return (
-    <path 
-      d={props.d}
+    <polygon
+      points={props.points}
       fill={stateToColor[props.state]} 
       onClick={props.onClick}
     />
