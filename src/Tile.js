@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const stateToColor = ['orange', 'black', 'red', 'pink', 'green'] // state corresponds to index (e.g. state 0 is orange)
+const stateToColor = ['lightgray', 'pink', 'yellow', 'coral', 'cyan'] // state corresponds to index (e.g. state 0 is the color at index 0)
 
 
-function Tile() {
-  const [state, setState] = useState(0);
-
+function Tile(props) {
   return (
     <path 
-      d="M812,514 L878,311 L705,437 L640,640 Z" 
-      fill={stateToColor[state]} 
-      onClick={() => setState((prevState) => prevState === 4 ? 0 : prevState+1)}
+      d={props.d}
+      fill={stateToColor[props.state]} 
+      onClick={props.onClick}
     />
   );
 }

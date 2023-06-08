@@ -1,9 +1,9 @@
-import Grid from './Grid';
+import Tiling from './Tiling';
 
 
 function App() {
   return (
-    <Grid />
+    <Tiling />
   );
 }
 
