@@ -29,3 +29,7 @@ button:hover {
     font-size: 40px;
     margin: 20px;
 }
+
+svg text {
+    cursor: default;
+}

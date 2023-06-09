@@ -4,16 +4,27 @@ import points from './points.json'; // each subarray specifies the vertices of o
 
 // the neighbors of a tile are defined to be those which share at least one vertex with that tile
 const neighbors = {};
+const centroids = {};
 for (let i = 0; i < points.length; i++) {
-    neighbors[i] = new Set();
+  neighbors[i] = new Set();
 }
 for (let i = 0; i < points.length; i++) {
-    for (let i2 = i+1; i2 < points.length; i2++) {
-        if (points[i].some(item => points[i2].includes(item))) {
-            neighbors[i].add(i2);
-            neighbors[i2].add(i);
-        }
+  // centroid
+  let xs = 0, ys = 0;
+  for (const point of points[i]) {
+    const [x, y] = point.split(',').map((el) => parseInt(el))
+    xs += x;
+    ys += y;
+  }
+  centroids[i] = [Math.round(xs/4), Math.round(ys/4)];
+
+  // neighbors
+  for (let i2 = i+1; i2 < points.length; i2++) {
+    if (points[i].some(item => points[i2].includes(item))) {
+      neighbors[i].add(i2);
+      neighbors[i2].add(i);
     }
+  }
 }
 console.log(neighbors);
 
@@ -29,9 +40,16 @@ function Tiling() {
 
   return (
     <svg width="1280" height="1280" viewBox="0 0 1280 1280" xmlns="http://www.w3.org/2000/svg">
-      <g stroke="#000000" strokeWidth="0.5" fill="transparent">
+      <g stroke="black" strokeWidth="0.5" fill="transparent">
         {points.map((el, idx) => (
-          <Tile key={idx} points={el.join(' ')} state={tileStates[idx]} onClick={() => handleClick(idx)} />
+          <Tile 
+            key={idx}
+            points={el.join(' ')}
+            centroid = {centroids[idx]}
+            state={tileStates[idx]}
+            onClick={() => handleClick(idx)}
+            idx = {idx} // key is not a prop
+          />
         ))}
       </g>
     </svg>
