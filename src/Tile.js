@@ -1,7 +1,7 @@
 import React from 'react';
 
 // state corresponds to index (e.g. state 0 is the color at index 0)
-const stateToColor = ['lightgray', 'pink', 'yellow', 'coral', 'cyan']
+const stateToColor = ['lightgray', 'pink', 'yellow', 'coral']
 
 
 function Tile(props) {
@@ -13,7 +13,7 @@ function Tile(props) {
         onClick={props.onClick}
       />
       <text x={props.centroid[0]} y={props.centroid[1]} fill="black" onClick={props.onClick}>
-        {props.idx}
+        {props.state}
       </text>
     </>
   );
