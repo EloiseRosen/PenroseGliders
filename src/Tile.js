@@ -1,6 +1,7 @@
 import React from 'react';
 
-const stateToColor = ['lightgray', 'pink', 'yellow', 'coral', 'cyan'] // state corresponds to index (e.g. state 0 is the color at index 0)
+// state corresponds to index (e.g. state 0 is the color at index 0)
+const stateToColor = ['lightgray', 'pink', 'yellow', 'coral', 'cyan']
 
 
 function Tile(props) {

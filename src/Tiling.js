@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Tile from './Tile';
-import points from './points.json'; // each subarray specifies the vertices of a tile
+import points from './points.json'; // each subarray specifies the vertices of one tile
 
 // the neighbors of a tile are defined to be those which share at least one vertex with that tile
 const neighbors = {};

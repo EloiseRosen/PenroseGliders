@@ -1,0 +1,31 @@
+:root {
+    --med-gray: #858585;
+    --dark-gray: #626262;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+}
+
+button {
+    background-color: transparent;
+    color: var(--dark-gray);
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 10px;
+}
+
+button:hover {
+    color: var(--med-gray);
+  }
+
+.play-pause-button {
+    font-size: 40px;
+    margin: 20px;
+}
