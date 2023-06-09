@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import Tile from './Tile';
-import points from './points.json'; // each subarray specifies the vertices of one tile
+import tileData from './tileData.json';
 
 // the neighbors of a tile are defined to be those which share at least one vertex with that tile
 const neighbors = {};
-const centroids = {};
-for (let i = 0; i < points.length; i++) {
+const centroids = {}; // for displaying number in middle of tile
+for (let i = 0; i < tileData.length; i++) {
   neighbors[i] = new Set();
 }
-for (let i = 0; i < points.length; i++) {
+for (let i = 0; i < tileData.length; i++) {
+  const vertices = tileData[i].vertices;
+
   // centroid
   let xs = 0, ys = 0;
-  for (const point of points[i]) {
-    const [x, y] = point.split(',').map((el) => parseInt(el))
+  for (const vertex of vertices) {
+    const [x, y] = vertex.split(',').map((el) => parseInt(el))
     xs += x;
     ys += y;
   }
   centroids[i] = [Math.round(xs/4), Math.round(ys/4)];
 
   // neighbors
-  for (let i2 = i+1; i2 < points.length; i2++) {
-    if (points[i].some(item => points[i2].includes(item))) {
+  for (let i2 = i+1; i2 < tileData.length; i2++) {
+    if (vertices.some(vertex => tileData[i2].vertices.includes(vertex))) {
       neighbors[i].add(i2);
       neighbors[i2].add(i);
     }
@@ -29,7 +31,7 @@ for (let i = 0; i < points.length; i++) {
 
 
 function Tiling(props) {
-  const [tileStates, setTileStates] = useState(Array(points.length).fill(0));
+  const [tileStates, setTileStates] = useState(Array(tileData.length).fill(0));
 
   function numberOfNeighborsInState(tileIdx, state) {
     const neighborIndices = [...neighbors[tileIdx]];
@@ -73,11 +75,12 @@ function Tiling(props) {
   return (
     <svg width="1280" height="1280" viewBox="0 0 1280 1280" xmlns="http://www.w3.org/2000/svg">
       <g stroke="black" strokeWidth="0.5" fill="transparent">
-        {points.map((el, idx) => (
+        {tileData.map((el, idx) => (
           <Tile 
             key={idx}
-            points={el.join(' ')}
-            centroid = {centroids[idx]}
+            verticesString={el.vertices.join(' ')}
+            tileType={el.tileType}
+            centroid={centroids[idx]}
             state={tileStates[idx]}
             onClick={() => handleClick(idx)}
           />

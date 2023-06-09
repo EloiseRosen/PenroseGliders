@@ -1,20 +1,21 @@
 import React from 'react';
 
-// state corresponds to index (e.g. state 0 is the color at index 0)
-const stateToColor = ['lightgray', 'pink', 'yellow', 'coral']
+const activeColors = {1: 'pink', 2: 'yellow', 3: 'coral'}
 
 
 function Tile(props) {
   return (
     <>
       <polygon
-        points={props.points}
-        fill={stateToColor[props.state]} 
+        points={props.verticesString}
+        fill={props.state > 0 ? activeColors[props.state] : props.tileType === 1 ? 'lightgray' : 'gray'}
         onClick={props.onClick}
       />
+      {/* for displaying state on tile:
       <text x={props.centroid[0]} y={props.centroid[1]} fill="black" onClick={props.onClick}>
         {props.state}
       </text>
+      */}
     </>
   );
 }
