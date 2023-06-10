@@ -1,6 +1,11 @@
 :root {
+    --extra-light-gray: #d0d0d0;
+    --light-gray: #aaaaaa;
     --med-gray: #858585;
     --dark-gray: #626262;
+    --coral: #ff928b;
+    --orange: #ffb165;
+    --green: #cfe561;
 }
 
 * {

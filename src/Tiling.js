@@ -18,7 +18,7 @@ for (let i = 0; i < tileData.length; i++) {
     xs += x;
     ys += y;
   }
-  centroids[i] = [Math.round(xs/4), Math.round(ys/4)];
+  centroids[i] = [xs/4, ys/4];
 
   // neighbors
   for (let i2 = i+1; i2 < tileData.length; i2++) {
@@ -41,8 +41,10 @@ function Tiling(props) {
     const neighborsInState1 = numberOfNeighborsInState(tileIdx, 1);
     const neighborsInState2 = numberOfNeighborsInState(tileIdx, 2);
     const neighborsInState3 = numberOfNeighborsInState(tileIdx, 3);
-    if (tileStates[tileIdx] === 0 && neighborsInState1 >= 1 && (neighborsInState2 >= 1 || neighborsInState3 >= 2)) {
+    if (tileStates[tileIdx] === 0 && neighborsInState1 >= 1 && neighborsInState2 >= 1) {
       return 3;
+    } else if (tileStates[tileIdx] === 0 && neighborsInState1 >= 1 && neighborsInState3 >= 2) {
+      return 1;
     } else if (tileStates[tileIdx] === 1 && neighborsInState3 >= 1) {
       return 2;
     } else if (tileStates[tileIdx] === 1) {
@@ -64,7 +66,7 @@ function Tiling(props) {
       }, 1000); 
       return () => clearInterval(intervalId);
     } 
-  }, [props.isPlaying]);
+  }, [props.isPlaying, tileStates]);
 
   function handleClick(idx) {
     const nextTileStates = tileStates.slice();
