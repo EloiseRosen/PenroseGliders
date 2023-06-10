@@ -13,8 +13,7 @@ for (let i = 0; i < tileData.length; i++) {
 
   // centroid
   let xs = 0, ys = 0;
-  for (const vertex of vertices) {
-    const [x, y] = vertex.split(',').map((el) => parseInt(el))
+  for (const [x, y] of vertices) {
     xs += x;
     ys += y;
   }
@@ -22,7 +21,7 @@ for (let i = 0; i < tileData.length; i++) {
 
   // neighbors
   for (let i2 = i+1; i2 < tileData.length; i2++) {
-    if (vertices.some(vertex => tileData[i2].vertices.includes(vertex))) {
+    if (vertices.some(v1 => tileData[i2].vertices.some(v2 => v2[0] === v1[0] && v2[1] === v1[1]))) {
       neighbors[i].add(i2);
       neighbors[i2].add(i);
     }
@@ -80,7 +79,7 @@ function Tiling(props) {
         {tileData.map((el, idx) => (
           <Tile 
             key={idx}
-            verticesString={el.vertices.join(' ')}
+            verticesString={ el.vertices.map(pair => pair.join(',')).join(' ')}
             tileType={el.tileType}
             centroid={centroids[idx]}
             state={tileStates[idx]}
