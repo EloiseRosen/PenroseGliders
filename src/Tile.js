@@ -1,6 +1,7 @@
 import React from 'react';
 
-const activeColors = {1: 'var(--coral)', 2: 'var(--orange)', 3: 'var(--green)'}
+const activeColors = {1: 'var(--coral)', 2: 'var(--orange)', 3: 'var(--green)'};
+
 
 function Tile(props) {
   return (

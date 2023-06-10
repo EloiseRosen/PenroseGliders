@@ -21,7 +21,7 @@ for (let i = 0; i < tileData.length; i++) {
 
   // neighbors
   for (let i2 = i+1; i2 < tileData.length; i2++) {
-    if (vertices.some(v1 => tileData[i2].vertices.some(v2 => v2[0] === v1[0] && v2[1] === v1[1]))) {
+    if (vertices.some(v1 => tileData[i2].vertices.some(v2 => v1[0] === v2[0] && v1[1] === v2[1]))) {
       neighbors[i].add(i2);
       neighbors[i2].add(i);
     }
@@ -57,7 +57,7 @@ function Tiling(props) {
   useEffect(() => {
     if (props.isPlaying) {
       const intervalId = setInterval(() => {
-        let nextTileStates = Array(tileStates.length);
+        const nextTileStates = Array(tileStates.length);
         for (let i = 0; i < tileStates.length; i++) {
           nextTileStates[i] = getNextTileState(i);
         }
@@ -79,7 +79,7 @@ function Tiling(props) {
         {tileData.map((el, idx) => (
           <Tile 
             key={idx}
-            verticesString={ el.vertices.map(pair => pair.join(',')).join(' ')}
+            verticesString={el.vertices.map(pair => pair.join(',')).join(' ')}
             tileType={el.tileType}
             centroid={centroids[idx]}
             state={tileStates[idx]}
