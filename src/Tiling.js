@@ -65,7 +65,7 @@ function Tiling(props) {
       }, 1000); 
       return () => clearInterval(intervalId);
     } 
-  }, [props.isPlaying, tileStates]);
+  }, [props.isPlaying, tileStates, getNextTileState]);
 
   function handleClick(idx) {
     const nextTileStates = tileStates.slice();
