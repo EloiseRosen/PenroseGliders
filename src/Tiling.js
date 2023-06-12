@@ -53,7 +53,7 @@ function Tiling(props) {
     } else {
       return 0;
     }
-  }, [tileStates]);
+  }, [tileStates, numberOfNeighborsInState]);
 
   useEffect(() => {
     if (props.isPlaying) {
