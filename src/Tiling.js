@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Tile from './Tile';
 import tileData from './tileData.json';
 
@@ -36,7 +36,7 @@ function Tiling(props) {
     const neighborIndices = [...neighbors[tileIdx]];
     return neighborIndices.filter(neighborIdx => tileStates[neighborIdx] === state).length;
   }
-  function getNextTileState(tileIdx) {
+  const getNextTileState = useCallback((tileIdx) => {
     const neighborsInState1 = numberOfNeighborsInState(tileIdx, 1);
     const neighborsInState2 = numberOfNeighborsInState(tileIdx, 2);
     const neighborsInState3 = numberOfNeighborsInState(tileIdx, 3);
@@ -53,7 +53,8 @@ function Tiling(props) {
     } else {
       return 0;
     }
-  }
+  }, [tileStates]);
+
   useEffect(() => {
     if (props.isPlaying) {
       const intervalId = setInterval(() => {
