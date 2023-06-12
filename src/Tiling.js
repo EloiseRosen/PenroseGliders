@@ -32,10 +32,10 @@ for (let i = 0; i < tileData.length; i++) {
 function Tiling(props) {
   const [tileStates, setTileStates] = useState(Array(tileData.length).fill(0));
 
-  function numberOfNeighborsInState(tileIdx, state) {
+  const numberOfNeighborsInState = useCallback((tileIdx, state) => {
     const neighborIndices = [...neighbors[tileIdx]];
     return neighborIndices.filter(neighborIdx => tileStates[neighborIdx] === state).length;
-  }
+  }, [tileStates]);
   const getNextTileState = useCallback((tileIdx) => {
     const neighborsInState1 = numberOfNeighborsInState(tileIdx, 1);
     const neighborsInState2 = numberOfNeighborsInState(tileIdx, 2);
