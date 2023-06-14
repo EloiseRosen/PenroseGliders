@@ -75,7 +75,7 @@ function Tiling(props) {
   }
 
   return (
-    <svg width="1280" height="1280" viewBox="0 0 1280 1280" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 1280 1280" xmlns="http://www.w3.org/2000/svg">
       <g stroke="black" strokeWidth="0.5" fill="transparent">
         {tileData.map((el, idx) => (
           <Tile 

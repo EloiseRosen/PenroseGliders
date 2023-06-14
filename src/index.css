@@ -31,9 +31,14 @@ button:hover {
   }
 
 .play-pause-button {
-    font-size: 40px;
-    margin: 20px;
+    font-size: 3rem;
+    float: left;
+    padding-left:20px;
 }
+
+svg {
+    max-width: 100vh;
+ }
 
 svg text {
     cursor: default;
