@@ -20,7 +20,6 @@ import { Vector } from "./Vector.js";
             - try svg we update.
                 - how to get react to not touch it?
             - try canvas.
-        - expand view crop to avoid missing fragments at edges.
         - regenerate new tiles when window resizes.
             - not necessary now, the svg is sized to the page.
         - when game algorithm needs missing neighbor, generate it.
@@ -244,9 +243,11 @@ function generatePenroseTiling(translation) {
                     c = c.dividedBy(vertices.length).round();
 
                     // See if the centroid is visible in the view.
-                    // TODO expand this so that we don't see missing fragment at edges.
                     const vc = worldToView(c, translation);
-                    if (vc.x < 0 || vc.y < 0 || vc.x > VIEW_WIDTH || vc.y > VIEW_HEIGHT) {
+                    const margin = VIEW_SCALE;
+                    if (vc.x < -margin || vc.y < -margin ||
+                        vc.x > VIEW_WIDTH + margin || vc.y > VIEW_HEIGHT + margin) {
+
                         continue;
                     }
 
