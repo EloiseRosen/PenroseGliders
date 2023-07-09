@@ -1,39 +1,298 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Tile from './Tile';
-import tileData from './tileData.json';
+import { Vector } from "./Vector.js";
 
-// the neighbors of a tile are defined to be those which share at least one vertex with that tile
-const neighbors = {};
-const centroids = {}; // for displaying number in middle of tile
-for (let i = 0; i < tileData.length; i++) {
-  neighbors[i] = new Set();
+/*
+
+    Spaces:
+
+        world: where the tiles reside, independent of view. Includes scale.
+        view: shifted onto the screen.
+        grid: space that the basis vectors reside in.
+        tuple: 5-tuple of numbers representing how much of each basis vector.
+
+*/
+
+/*
+
+    to do:
+        - speed up redrawing.
+            - try svg we update.
+                - how to get react to not touch it?
+            - try canvas.
+        - expand view crop to avoid missing fragments at edges.
+        - regenerate new tiles when window resizes.
+            - not necessary now, the svg is sized to the page.
+        - when game algorithm needs missing neighbor, generate it.
+            - how to know if it's missing?
+                - maybe always do it?
+            - use tiny viewport to generate missing neighbors.
+
+*/
+
+const DIMS = 5;
+const VIEW_SCALE = 80;
+const VIEW_WIDTH = 1280;
+const VIEW_HEIGHT = 1280;
+const VIEW_SIZE = new Vector(VIEW_WIDTH, VIEW_HEIGHT);
+const VIEW_CENTER = new Vector(VIEW_WIDTH/2, VIEW_HEIGHT/2);
+
+// String of vertex coordinate ("x,y") to array of indices of faces with that vertex.
+const vertexMap = new Map();
+
+// Centroid ("x,y") of already-generated tiles.
+const generatedTileIds = new Set();
+
+// Array of information about each tile:
+//     vertices: array of [x,y] vertices in world space.
+//     tileType: 1 for thick, 2 for thin.
+//     neighbors: set of indices of neighbors (sharing at least one vertex).
+//     centroid: [x,y] location of centroid of tile in world space, for text.
+const tileData = [];
+
+// Make the basis vectors. These are equidistant around the unit circle.
+const basis = range(DIMS)
+    .map(i => Vector.fromPolar(1, 2*Math.PI*i/DIMS));
+
+// Make the offset constants. 0.3 is the "Penrose sun".
+const gamma = new Array(DIMS).fill(0.3);
+
+/**
+ * Make a new array of size count with values 0 to count-1.
+ */
+function range(count: number): number[] {
+    return new Array(count).fill(0).map((elm, i) => i);
 }
-for (let i = 0; i < tileData.length; i++) {
-  const vertices = tileData[i].vertices;
 
-  // centroid
-  let xs = 0, ys = 0;
-  for (const [x, y] of vertices) {
-    xs += x;
-    ys += y;
-  }
-  centroids[i] = [xs/4, ys/4];
+/**
+ * Given the index of a tile that was just added to tileData, fill in its
+ * neighbors field and update the neighbors fields of its neighbors.
+ */
+function computeTileNeighbors(i) {
+    const tile = tileData[i];
 
-  // neighbors
-  for (let i2 = i+1; i2 < tileData.length; i2++) {
-    if (vertices.some(v1 => tileData[i2].vertices.some(v2 => v1[0] === v2[0] && v1[1] === v2[1]))) {
-      neighbors[i].add(i2);
-      neighbors[i2].add(i);
+    for (const v of tile.vertices) {
+        // Find the vertex in the map, adding if necessary.
+        const sv = v.join(",");
+        let indexList = vertexMap.get(sv);
+        if (indexList === undefined) {
+            indexList = [];
+            vertexMap.set(sv, indexList);
+        }
+
+        // Update all neighbors arrays.
+        for (const j of indexList) {
+            // In case vertices collapse.
+            if (j !== i) {
+                tileData[i].neighbors.add(j);
+                tileData[j].neighbors.add(i);
+            }
+        }
+
+        // Add ourselves for this vertex.
+        indexList.push(i);
     }
-  }
 }
 
+/**
+ * Convert a DIMS-length array to world space. The array describes
+ * how much of each basis we want.
+ */
+function tupleToWorld(n: number[]): Vector {
+    let p = Vector.ZERO;
+
+    for (let i = 0; i < DIMS; i++) {
+        p = p.plus(basis[i].times(n[i] - gamma[i]));
+    }
+
+    // We divide by half the number of dimensions because
+    // the some of the squares of the dot products adds up
+    // to that, so our result is too high by this factor.
+    return p.times(VIEW_SCALE).dividedBy(DIMS/2).round();
+}
+
+/**
+ * Inverse of tupleToWorld().
+ */
+function worldToTuple(v: Vector): number[] {
+    const n: number[] = [];
+
+    v = v.dividedBy(VIEW_SCALE);
+
+    for (let i = 0; i < DIMS; i++) {
+        n.push(v.dot(basis[i]) + gamma[i]);
+    }
+
+    return n;
+}
+
+/**
+ * Converts a world-space location to view space.
+ */
+function worldToView(v: Vector, translation: Vector): Vector {
+    return v.plus(translation);
+}
+
+/**
+ * Converts a view-space location to world space.
+ */
+function viewToWorld(v: Vector, translation: Vector): Vector {
+    return v.minus(translation);
+}
+
+/**
+ * Given the bounds of a view (upper left and lower right) returns the
+ * min and max values of each basis to cover that view.
+ */
+function getBounds(v1: Vector, v2: Vector, translation: Vector): number[2][DIMS] {
+    const corners = [
+        v1,
+        new Vector(v1.x, v2.y),
+        new Vector(v2.x, v1.y),
+        v2,
+    ];
+
+    let min = new Array(DIMS).fill(Infinity);
+    let max = new Array(DIMS).fill(-Infinity);
+
+    for (const v of corners) {
+        const n = worldToTuple(viewToWorld(v, translation));
+
+        for (let i = 0; i < DIMS; i++) {
+            min[i] = Math.min(min[i], Math.floor(n[i]));
+            max[i] = Math.max(max[i], Math.ceil(n[i]));
+        }
+    }
+
+    return [min, max];
+}
+
+/**
+ * Given two rays (p for origin point, r for direction), return their
+ * intersection, or undefined if they're parallel.
+ */
+function intersectRays(pi, ri, pj, rj) {
+    const d = pi.minus(pj);
+
+    // Find how far along our own ray we intersect the other line.
+    const denom = ri.det(rj);
+    if (Math.abs(denom) < 1e-3) {
+        return undefined;
+    }
+    const t = rj.det(d) / denom;
+    return pi.plus(ri.times(t));
+}
+
+/**
+ * Generate all the tiles visible in the current view that haven't yet been
+ * generated.
+ */
+function generatePenroseTiling(translation) {
+    const before = new Date().getTime();
+
+    const [min, max] = getBounds(Vector.ZERO, VIEW_SIZE, translation);
+
+    let newTileCount = 0;
+
+    // Go through all possible pairs of lines.
+    for (let i = 0; i < DIMS - 1; i++) {
+        for (let j = i + 1; j < DIMS; j++) {
+            // Go through all possible visible lines of each.
+            for (let ni = min[i]; ni <= max[i]; ni++) {
+                for (let nj = min[j]; nj <= max[j]; nj++) {
+                    // Make rays for each.
+                    const pi = basis[i].times(ni - gamma[i]);
+                    const pj = basis[j].times(nj - gamma[j]);
+                    const ri = basis[i].perpendicular();
+                    const rj = basis[j].perpendicular();
+
+                    // Intersect the rays. Result is in grid space.
+                    const v = intersectRays(pi, ri, pj, rj);
+                    if (v === undefined) {
+                        console.log("bases are parallel");
+                        continue;
+                    }
+
+                    // Construct the 5-tuple describing one of the vertices.
+                    const n: number[] = [];
+                    for (let k = 0; k < DIMS; k++) {
+                        if (k === i) {
+                            n.push(ni);
+                        } else if (k === j) {
+                            n.push(nj);
+                        } else {
+                            n.push(Math.floor(basis[k].dot(v) + gamma[k]));
+                        }
+                    }
+
+                    // Generate vertices. There's an easier way to do this where
+                    // we just add the basis vectors.
+                    const vertices = [];
+                    vertices.push(tupleToWorld(n).toArray());
+                    n[i] -= 1;
+                    vertices.push(tupleToWorld(n).toArray());
+                    n[j] -= 1;
+                    vertices.push(tupleToWorld(n).toArray());
+                    n[i] += 1;
+                    vertices.push(tupleToWorld(n).toArray());
+
+                    // Compute centroid.
+                    let c = Vector.ZERO;
+                    for (const v of vertices) {
+                        c = c.plus(Vector.fromArray(v));
+                    }
+                    c = c.dividedBy(vertices.length).round();
+
+                    // See if the centroid is visible in the view.
+                    // TODO expand this so that we don't see missing fragment at edges.
+                    const vc = worldToView(c, translation);
+                    if (vc.x < 0 || vc.y < 0 || vc.x > VIEW_WIDTH || vc.y > VIEW_HEIGHT) {
+                        continue;
+                    }
+
+                    // See if we've generated this tile before.
+                    const id = c.toString();
+                    if (generatedTileIds.has(id)) {
+                        continue;
+                    }
+                    generatedTileIds.add(id);
+
+                    // Generate the tile.
+                    const thick = j - i === 1 || j - i === 4;
+                    tileData.push({
+                        vertices: vertices,
+                        tileType: thick ? 1 : 2,
+                        neighbors: new Set(),
+                        centroid: c.toArray(),
+                    });
+                    computeTileNeighbors(tileData.length - 1);
+                    newTileCount += 1;
+                }
+            }
+        }
+    }
+
+    const after = new Date().getTime();
+
+    console.log(newTileCount, "new tiles",
+                tileData.length, "total tiles",
+                after - before, "ms",
+                translation.toArray(), "translate");
+}
+
+// Generate initial set of tiles.
+generatePenroseTiling(VIEW_CENTER);
 
 function Tiling(props) {
+  // Array from index to tile state (0, 1, 2, 3).
   const [tileStates, setTileStates] = useState(Array(tileData.length).fill(0));
+  // [x,y] array of view translation.
+  const [translation, setTranslation] = useState(VIEW_CENTER.toArray());
+  // [x,y] array of last location of mouse screen coordinates.
+  const [lastMouseScreen, setLastMouseScreen] = useState([0, 0]);
 
   const numberOfNeighborsInState = useCallback((tileIdx, state) => {
-    const neighborIndices = [...neighbors[tileIdx]];
+    const neighborIndices = [...tileData[tileIdx].neighbors];
     return neighborIndices.filter(neighborIdx => tileStates[neighborIdx] === state).length;
   }, [tileStates]);
   const getNextTileState = useCallback((tileIdx) => {
@@ -63,7 +322,7 @@ function Tiling(props) {
           nextTileStates[i] = getNextTileState(i);
         }
         setTileStates(nextTileStates);
-      }, 1000); 
+      }, 100);
       return () => clearInterval(intervalId);
     } 
   }, [props.isPlaying, tileStates, getNextTileState]);
@@ -74,15 +333,33 @@ function Tiling(props) {
     setTileStates(nextTileStates);
   }
 
+  function handleMouseMove(e) {
+      const dx = e.screenX - lastMouseScreen[0];
+      const dy = e.screenY - lastMouseScreen[1];
+
+      if (e.buttons !== 0 && (dx !== 0 || dy !== 0)) {
+          setTranslation([translation[0] + dx, translation[1] + dy]);
+          generatePenroseTiling(Vector.fromArray(translation).plus(new Vector(dx, dy)));
+
+          // Extend the state array if necessary.
+          if (tileStates.length < tileData.length) {
+              setTileStates([...tileStates, ...Array(tileData.length - tileStates.length).fill(0)]);
+          }
+      }
+
+      // TODO this probably causes a full redraw, can we save it elsewhere?
+      setLastMouseScreen([e.screenX, e.screenY]);
+  }
+
   return (
-    <svg viewBox="0 0 1280 1280" xmlns="http://www.w3.org/2000/svg">
-      <g stroke="black" strokeWidth="0.5" fill="transparent">
+    <svg viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} xmlns="http://www.w3.org/2000/svg" onMouseMove={e => handleMouseMove(e)}>
+      <g stroke="black" strokeWidth="0.5" fill="transparent" transform={`translate(${translation[0]} ${translation[1]})`}>
         {tileData.map((el, idx) => (
           <Tile 
             key={idx}
             verticesString={el.vertices.map(pair => pair.join(',')).join(' ')}
             tileType={el.tileType}
-            centroid={centroids[idx]}
+            centroid={el.centroid}
             state={tileStates[idx]}
             onClick={() => handleClick(idx)}
           />
