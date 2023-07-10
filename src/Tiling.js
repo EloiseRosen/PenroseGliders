@@ -16,12 +16,14 @@ import { Vector } from "./Vector.js";
 /*
 
     to do:
+        - when re-entering window after drag, the translation jumps.
+            - the state isn't updated right away and a few move events
+                get triggered with mouse down still true.
         - speed up redrawing.
             - try svg we update.
                 - how to get react to not touch it?
             - try canvas.
         - regenerate new tiles when window resizes.
-            - not necessary now, the svg is sized to the page.
         - when game algorithm needs missing neighbor, generate it.
             - how to know if it's missing?
                 - maybe always do it?
@@ -275,10 +277,12 @@ function generatePenroseTiling(translation) {
 
     const after = new Date().getTime();
 
+    /*
     console.log(newTileCount, "new tiles",
                 tileData.length, "total tiles",
                 after - before, "ms",
                 translation.toArray(), "translate");
+                */
 }
 
 // Generate initial set of tiles.
@@ -287,10 +291,14 @@ generatePenroseTiling(VIEW_CENTER);
 function Tiling(props) {
   // Array from index to tile state (0, 1, 2, 3).
   const [tileStates, setTileStates] = useState(Array(tileData.length).fill(0));
-  // [x,y] array of view translation.
-  const [translation, setTranslation] = useState(VIEW_CENTER.toArray());
-  // [x,y] array of last location of mouse screen coordinates.
-  const [lastMouseScreen, setLastMouseScreen] = useState([0, 0]);
+  // Vector of view translation.
+  const [translation, setTranslation] = useState(VIEW_CENTER);
+  // Whether the mouse button is pressed.
+  const [mouseDown, setMouseDown] = useState(false);
+  // Vector of last location of mouse client coordinates.
+  const [mousePreviousLocation, setMousePreviousLocation] = useState(Vector.ZERO);
+  // Vector of location of mouse client coordinates on mouse click.
+  const [mouseClickLocation, setMouseClickLocation] = useState(Vector.ZERO);
 
   const numberOfNeighborsInState = useCallback((tileIdx, state) => {
     const neighborIndices = [...tileData[tileIdx].neighbors];
@@ -334,27 +342,57 @@ function Tiling(props) {
     setTileStates(nextTileStates);
   }
 
-  function handleMouseMove(e) {
-      const dx = e.screenX - lastMouseScreen[0];
-      const dy = e.screenY - lastMouseScreen[1];
+  function handleMouseEnter(e) {
+      console.log("mouse enter", e.buttons);
+      setMouseDown(e.buttons !== 0);
+  }
 
-      if (e.buttons !== 0 && (dx !== 0 || dy !== 0)) {
-          setTranslation([translation[0] + dx, translation[1] + dy]);
-          generatePenroseTiling(Vector.fromArray(translation).plus(new Vector(dx, dy)));
+  function handleMouseDown(e) {
+      const location = new Vector(e.clientX, e.clientY);
+
+      setMouseDown(true);
+      setMousePreviousLocation(location);
+      setMouseClickLocation(location);
+  }
+
+  function handleMouseMove(e) {
+      console.log("mouse move", mouseDown);
+      if (mouseDown) {
+          const location = new Vector(e.clientX, e.clientY);
+          const movement = location.minus(mousePreviousLocation);
+
+          const newTranslation = translation.plus(movement);
+
+          setTranslation(newTranslation);
+          generatePenroseTiling(newTranslation);
 
           // Extend the state array if necessary.
           if (tileStates.length < tileData.length) {
               setTileStates([...tileStates, ...Array(tileData.length - tileStates.length).fill(0)]);
           }
-      }
 
-      // TODO this probably causes a full redraw, can we save it elsewhere?
-      setLastMouseScreen([e.screenX, e.screenY]);
+          setMousePreviousLocation(location);
+      }
+  }
+
+  function handleMouseUp(e) {
+      const location = new Vector(e.clientX, e.clientY);
+      const movement = location.minus(mouseClickLocation);
+
+      setMouseDown(false);
+
+      if (movement.length() > 2) {
+          e.stopPropagation();
+      }
   }
 
   return (
-    <svg viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} xmlns="http://www.w3.org/2000/svg" onMouseMove={e => handleMouseMove(e)}>
-      <g stroke="black" strokeWidth="0.5" fill="transparent" transform={`translate(${translation[0]} ${translation[1]})`}>
+    <svg viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} xmlns="http://www.w3.org/2000/svg"
+        onMouseEnter={handleMouseEnter}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUpCapture={handleMouseUp}>
+      <g stroke="black" strokeWidth="0.5" fill="transparent" transform={`translate(${translation.x} ${translation.y})`}>
         {tileData.map((el, idx) => (
           <Tile 
             key={idx}

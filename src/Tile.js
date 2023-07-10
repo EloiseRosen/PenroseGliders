@@ -9,9 +9,9 @@ function Tile(props) {
       <polygon
         points={props.verticesString}
         fill={props.state > 0 ? activeColors[props.state] : props.tileType === 1 ? 'var(--extra-light-gray)' : 'var(--light-gray)'}
-        onClick={props.onClick}
+        onMouseUp={props.onClick}
       />
-      <text x={props.centroid[0]} y={props.centroid[1]} fill="black" textAnchor="middle" dominantBaseline="middle" fontSize="12" onClick={props.onClick}>
+      <text x={props.centroid[0]} y={props.centroid[1]} fill="black" textAnchor="middle" dominantBaseline="middle" fontSize="12" onMouseUp={props.onClick}>
         {props.state !== 0 && props.state}
       </text>
     </>
