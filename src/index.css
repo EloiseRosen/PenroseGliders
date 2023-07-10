@@ -37,7 +37,6 @@ button:hover {
 
 input[type="range"] {
     vertical-align: middle;
-    padding: 10px;
 }
 
 label {
@@ -57,6 +56,6 @@ label {
 #speed-slider {
     position: absolute;
     top: 80px;
-    left: 20px;
+    left: 30px;
     z-index: 1;
 }
