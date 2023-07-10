@@ -277,12 +277,10 @@ function generatePenroseTiling(translation) {
 
     const after = new Date().getTime();
 
-    /*
     console.log(newTileCount, "new tiles",
                 tileData.length, "total tiles",
                 after - before, "ms",
                 translation.toArray(), "translate");
-                */
 }
 
 // Generate initial set of tiles.
