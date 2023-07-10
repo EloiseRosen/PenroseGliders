@@ -323,10 +323,10 @@ function Tiling(props) {
           nextTileStates[i] = getNextTileState(i);
         }
         setTileStates(nextTileStates);
-      }, 100);
+      }, props.speed);
       return () => clearInterval(intervalId);
     } 
-  }, [props.isPlaying, tileStates, getNextTileState]);
+  }, [props.isPlaying, props.speed, tileStates, getNextTileState]);
 
   function handleClick(idx) {
     const nextTileStates = tileStates.slice();
