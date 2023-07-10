@@ -20,7 +20,6 @@ import { Vector } from "./Vector.js";
             - try svg we update.
                 - how to get react to not touch it?
             - try canvas.
-        - regenerate new tiles when window resizes.
         - when game algorithm needs missing neighbor, generate it.
             - how to know if it's missing?
                 - maybe always do it?
@@ -30,10 +29,6 @@ import { Vector } from "./Vector.js";
 
 const DIMS = 5;
 const VIEW_SCALE = 80;
-const VIEW_WIDTH = window.innerWidth;
-const VIEW_HEIGHT = window.innerHeight;
-const VIEW_SIZE = new Vector(VIEW_WIDTH, VIEW_HEIGHT);
-const VIEW_CENTER = new Vector(VIEW_WIDTH/2, VIEW_HEIGHT/2);
 
 // String of vertex coordinate ("x,y") to array of indices of faces with that vertex.
 const vertexMap = new Map();
@@ -185,10 +180,10 @@ function intersectRays(pi, ri, pj, rj) {
  * Generate all the tiles visible in the current view that haven't yet been
  * generated.
  */
-function generatePenroseTiling(translation) {
+function generatePenroseTiling(translation, size) {
     const before = new Date().getTime();
 
-    const [min, max] = getBounds(Vector.ZERO, VIEW_SIZE, translation);
+    const [min, max] = getBounds(Vector.ZERO, size, translation);
 
     let newTileCount = 0;
 
@@ -245,7 +240,7 @@ function generatePenroseTiling(translation) {
                     const vc = worldToView(c, translation);
                     const margin = VIEW_SCALE;
                     if (vc.x < -margin || vc.y < -margin ||
-                        vc.x > VIEW_WIDTH + margin || vc.y > VIEW_HEIGHT + margin) {
+                        vc.x > size.x + margin || vc.y > size.y + margin) {
 
                         continue;
                     }
@@ -280,14 +275,11 @@ function generatePenroseTiling(translation) {
                 translation.toArray(), "translate");
 }
 
-// Generate initial set of tiles.
-generatePenroseTiling(VIEW_CENTER);
-
 function Tiling(props) {
   // Array from index to tile state (0, 1, 2, 3).
   const [tileStates, setTileStates] = useState(Array(tileData.length).fill(0));
   // Vector of view translation.
-  const [translation, setTranslation] = useState(VIEW_CENTER);
+  const [translation, setTranslation] = useState(props.size.dividedBy(2));
   // Whether the mouse button is pressed.
   const [mouseDown, setMouseDown] = useState(false);
   // Vector of last location of mouse client coordinates.
@@ -331,6 +323,14 @@ function Tiling(props) {
     } 
   }, [props.isPlaying, props.speed, tileStates, getNextTileState]);
 
+  // Generate set of tiles.
+  generatePenroseTiling(translation, props.size);
+
+  // Extend the state array if necessary.
+  if (tileStates.length < tileData.length) {
+      setTileStates([...tileStates, ...Array(tileData.length - tileStates.length).fill(0)]);
+  }
+
   function handleClick(idx) {
     const nextTileStates = tileStates.slice();
     nextTileStates[idx] = tileStates[idx] === 3 ? 0 : tileStates[idx]+1;
@@ -360,13 +360,6 @@ function Tiling(props) {
           const newTranslation = translation.plus(movement);
 
           setTranslation(newTranslation);
-          generatePenroseTiling(newTranslation);
-
-          // Extend the state array if necessary.
-          if (tileStates.length < tileData.length) {
-              setTileStates([...tileStates, ...Array(tileData.length - tileStates.length).fill(0)]);
-          }
-
           setMousePreviousLocation(location);
       }
   }
@@ -383,7 +376,7 @@ function Tiling(props) {
   }
 
   return (
-    <svg viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} xmlns="http://www.w3.org/2000/svg"
+    <svg viewBox={`0 0 ${props.size.x} ${props.size.y}`} xmlns="http://www.w3.org/2000/svg"
         onMouseEnter={handleMouseEnter}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}

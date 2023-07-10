@@ -18,6 +18,10 @@ html {
     position: relative;
 }
 
+body {
+    overflow: hidden;
+}
+
 svg text {
     cursor: default;
     user-select: none;
