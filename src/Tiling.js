@@ -16,9 +16,6 @@ import { Vector } from "./Vector.js";
 /*
 
     to do:
-        - when re-entering window after drag, the translation jumps.
-            - the state isn't updated right away and a few move events
-                get triggered with mouse down still true.
         - speed up redrawing.
             - try svg we update.
                 - how to get react to not touch it?
@@ -341,7 +338,6 @@ function Tiling(props) {
   }
 
   function handleMouseEnter(e) {
-      console.log("mouse enter", e.buttons);
       setMouseDown(e.buttons !== 0);
   }
 
@@ -354,8 +350,10 @@ function Tiling(props) {
   }
 
   function handleMouseMove(e) {
-      console.log("mouse move", mouseDown);
-      if (mouseDown) {
+      // We need to check both mouseDown and e.buttons because mouseDown may be
+      // out of date if the event happens after a setMouseDown() but before
+      // a redraw.
+      if (mouseDown && e.buttons !== 0) {
           const location = new Vector(e.clientX, e.clientY);
           const movement = location.minus(mousePreviousLocation);
 
