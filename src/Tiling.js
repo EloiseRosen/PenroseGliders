@@ -31,8 +31,8 @@ import { Vector } from "./Vector.js";
 
 const DIMS = 5;
 const VIEW_SCALE = 80;
-const VIEW_WIDTH = 1280;
-const VIEW_HEIGHT = 1280;
+const VIEW_WIDTH = window.innerWidth;
+const VIEW_HEIGHT = window.innerHeight;
 const VIEW_SIZE = new Vector(VIEW_WIDTH, VIEW_HEIGHT);
 const VIEW_CENTER = new Vector(VIEW_WIDTH/2, VIEW_HEIGHT/2);
 

@@ -3,10 +3,10 @@ import React from 'react';
 
 function Slider(props) {
   return (
-    <div>
+    <div id="speed-slider">
       <input
         type="range"
-        name="speed"
+        id="speed"
         min="0"
         max={props.max}
         step="50" 
