@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PlayPauseButton from './PlayPauseButton';
 import Tiling from './Tiling';
 import Slider from './Slider';
+import Info from './Info';
 import { Vector } from "./Vector.js";
 
 const largestIntervalMs = 1000;
@@ -29,16 +30,17 @@ function App() {
   return (
     <>
       <PlayPauseButton isPlaying={isPlaying} onClick={() => setIsPlaying(prev => !prev)} />
-      <Tiling
-        isPlaying={isPlaying}
-        speed={largestIntervalMs-sliderVal}
-        size={size}
-      />
       <Slider
         max={largestIntervalMs-smallestIntervalMs}
         sliderVal={sliderVal}
         onChange={(event) => setSliderVal(event.target.value)}
       />
+      <Tiling
+        isPlaying={isPlaying}
+        speed={largestIntervalMs-sliderVal}
+        size={size}
+      />
+      <Info />
     </>
   );
 }
