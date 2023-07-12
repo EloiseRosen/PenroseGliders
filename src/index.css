@@ -89,12 +89,26 @@ label {
     right: 80px;
     bottom: 50px;
     z-index: 1;
+    width: calc(80vw - 80px);
     max-height: calc(100vh - 150px); 
     max-width: 600px; 
     border: 2px solid black;
     border-radius: 10px;
     padding: 50px 50px 0px 50px;
     overflow-y: auto;
+}
+
+@media screen and (max-width: 768px) {
+    #info-button {
+        right: 10px;
+        bottom: 5px;
+    }
+
+    #info-box {
+        width: calc(80vw - 50px);
+        right: 10px;
+        bottom: 100px;
+  }
 }
 
 #exit-info-button {
