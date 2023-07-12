@@ -106,6 +106,7 @@ label {
 
     #info-box {
         width: calc(80vw - 50px);
+        height: calc(100vh - 200px);
         right: 10px;
         bottom: 100px;
   }
