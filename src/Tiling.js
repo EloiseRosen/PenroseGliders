@@ -378,9 +378,9 @@ function Tiling(props) {
   return (
     <svg viewBox={`0 0 ${props.size.x} ${props.size.y}`} xmlns="http://www.w3.org/2000/svg"
         onMouseEnter={handleMouseEnter}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUpCapture={handleMouseUp}>
+        onPointerDown={handleMouseDown}
+        onPointerMove={handleMouseMove}
+        onPointerUpCapture={handleMouseUp}>
       <g stroke="black" strokeWidth="0.5" fill="transparent" transform={`translate(${translation.x} ${translation.y})`}>
         {tileData.map((el, idx) => (
           <Tile 
