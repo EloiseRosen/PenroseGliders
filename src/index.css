@@ -32,6 +32,12 @@ p {
     margin: 10px 0;
 }
 
+svg {
+    /* prevent mobile browser from interpreting touch events
+       as pan/zoom, since we do that ourselves */
+    touch-action: none;
+}
+
 svg text {
     cursor: default;
     user-select: none;
