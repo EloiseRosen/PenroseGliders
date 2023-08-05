@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import gliderImage from './images/glider.png'; 
-import oscillatorImage from './images/oscillator.png'; 
 
 
 function Info() {
@@ -15,16 +14,11 @@ function Info() {
         </button>
         
         <p>This is an implementation of the Penrose-tiling-based cellular automaton described in <a href="https://www.semanticscholar.org/paper/Gliders-in-Cellular-Automata-on-Penrose-Tilings-Goucher/621cfcd0dd0a8e205855545e832cf977f11b416f" target="_blank" rel="noreferrer">this paper</a>.</p>
-        <h1>Some things you can make</h1>
+        <h1>Making a glider</h1>
         <p>To make a <a href="https://en.wikipedia.org/wiki/Spaceship_(cellular_automaton)" target="_blank" rel="noreferrer">glider/spaceship</a>, choose any two tiles that share an edge, click to set one of them to state 1, and the other to state 2. Then press play.</p>
         <p>This is the first glider pattern to exist on an aperiodic tiling!</p>
         <div className="centered-content">
           <img src={gliderImage} className="info-box-image" alt="initial glider state"></img>
-        </div>
-        <br/>
-        <p>To make an <a href="https://en.wikipedia.org/wiki/Oscillator_(cellular_automaton)" target="_blank" rel="noreferrer">oscillator</a>, find an all-skinny-tile star, and click to put a ring of 10 alternating 1s and 2s around it. Then press play.</p>
-        <div className="centered-content">
-          <img src={oscillatorImage} className="info-box-image" alt="initial oscillator state"></img>
         </div>
         
         <h1>The rules</h1>
