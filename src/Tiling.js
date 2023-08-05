@@ -47,8 +47,13 @@ const tileData = [];
 const basis = range(DIMS)
     .map(i => Vector.fromPolar(1, 2*Math.PI*i/DIMS));
 
-// Make the offset constants. 0.3 is the "Penrose sun".
-const gamma = new Array(DIMS).fill(0.3);
+// Make the offset constants. They must obey these constraints:
+//    - All different values
+//    - gamma[0] === 0
+//    - sum(gamma) === 0
+//    - gamma[1] + gamma[4] is not an integer
+//    - gamma[2] + gamma[3] is not an integer
+const gamma = [0, -0.05, -0.10, 0.05, 0.10];
 
 /**
  * Make a new array of size count with values 0 to count-1.
