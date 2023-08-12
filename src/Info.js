@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import gliderImage from './images/glider.png'; 
 
 
+/**
+ * The Info component explains what the Penrose-tiling-based cellular automaton is, and
+ * how to interact with it.
+ */
 function Info() {
   const [infoIsOpen, setInfoIsOpen] = useState(false);
 

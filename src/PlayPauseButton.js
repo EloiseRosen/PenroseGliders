@@ -1,6 +1,9 @@
 import React from 'react';
 
 
+/**
+ * The PlayPauseButton component controls play/pause functionality.
+ */
 function PlayPauseButton(props) {
   return (
     <button onClick={props.onClick} id="play-pause-button">

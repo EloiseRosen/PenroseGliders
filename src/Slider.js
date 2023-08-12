@@ -1,6 +1,9 @@
 import React from 'react';
 
 
+/**
+ * The Slider component controls the speed of the cellular automaton steps.
+ */
 function Slider(props) {
   return (
     <div id="speed-slider">

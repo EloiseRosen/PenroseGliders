@@ -3,6 +3,10 @@ import React from 'react';
 const activeColors = {1: 'var(--coral)', 2: 'var(--orange)', 3: 'var(--green)'};
 
 
+/**
+ * The Tile component represents an individual tile. The tile displays the number of the state that it's in.
+ * The Tile color also reflects its state.
+ */
 function Tile(props) {
   return (
     <>
